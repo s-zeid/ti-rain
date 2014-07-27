@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <title>Rain Animation</title>
   <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-  <link rel="shortcut icon" type="image/png" href="favicon.png" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <meta name="viewport" content="width=320; initial-scale=1; minimum-scale=1" />
   <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
