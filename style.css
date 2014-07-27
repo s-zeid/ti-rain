@@ -1,0 +1,25 @@
+html {
+ background-color: #CFCFC6;
+ font-family: "Ubuntu", "DejaVu Sans", "Bitstream Vera Sans", "Verdana",
+              sans-serif;
+ font-size: 0.8em;
+}
+body {
+ height: 100%;
+ margin: 0;
+ position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+}
+#screen {
+ position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+ margin: auto;
+ background-color: #BDBDB5;
+}
+#about {
+ position: absolute; top: 0; right: 0;
+ background-color: #BDBDB5;
+}
+#about a {
+ padding: .5em;
+ text-decoration: none;
+ color: #40403D;
+}
