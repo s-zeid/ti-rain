@@ -16,6 +16,9 @@
   <canvas id="screen" width="96" height="64">
    Please upgrade your browser to one that supports the HTML5 Canvas element.
   </canvas>
-  <span id="about"><a href="http://s.zeid.me/projects/rain/">About</a></span>
+  <span id="about">
+   <a href="http://s.zeid.me/projects/rain/">About</a>
+   <a href="http://code.s.zeid.me/ti-rain">Source</a>
+  </span>
  </body>
 </html>

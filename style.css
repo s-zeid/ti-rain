@@ -16,10 +16,14 @@ body {
 }
 #about {
  position: absolute; top: 0; right: 0;
- background-color: #BDBDB5;
 }
 #about a {
- padding: .5em;
+ line-height: 1.375em;
+ padding: .5em .5em .25em;
  text-decoration: none;
+ background-color: #BDBDB5;
  color: #40403D;
+}
+#about a + a {
+ margin-left: .125em;
 }
