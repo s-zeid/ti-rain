@@ -9,15 +9,20 @@ function get_params() {
  var parts = hash.split("&");
  for (var i = 0; i < parts.length; i++) {
   var part = parts[i], k, v;
+  if (k == "") continue;
   if (part.match("=")) {
    var match = part.match(/^([^=]+?)=(.*)$/);
    k = decodeURIComponent(match[1]);
    v = decodeURIComponent(match[2]);
+   if (v.toLowerCase() === "true")
+    v = true;
+   if (v.toLowerCase() === "false")
+    v = false;
   } else {
    k = decodeURIComponent(part);
    v = true;
   }
-  ret[k] = v;
+  ret[k.replace("-", "_")] = v;
  }
  return ret;
 }
@@ -35,8 +40,12 @@ function set_screen_size() {
  else {
   scale_factor = 3;
  }
- canvas.width = 96 * scale_factor;
- canvas.height = 64 * scale_factor;
+ var width = 96 * scale_factor;
+ var height = 64 * scale_factor;
+ canvas.width = width;
+ canvas.height = height;
+ canvas.style.width = String(width) + "px";
+ canvas.style.height = String(height) + "px";
 }
 window.onresize = set_screen_size;
 
@@ -64,19 +73,51 @@ function draw_rect(x, y, w, h) {
 function main() {
  params = get_params();
  
- // Handle embed mode if requested
- if (params.embed) {
-  document.getElementById("screen").style.background = "transparent";
-  document.body.style.background = "transparent";
-  document.documentElement.style.background = "transparent";
-  document.getElementById("about").style.display = "none";
- }
- 
  // Setup canvas
  canvas = document.getElementById("screen");
  set_screen_size();
  ctx = canvas.getContext('2d');
  ctx.mozImageSmoothingEnabled = false;
+ 
+ // Handle embed mode if requested
+ if (params.embed) {
+  canvas.style.background = "transparent";
+  document.body.style.background = "transparent";
+  document.documentElement.style.background = "transparent";
+  document.getElementById("about").style.display = "none";
+ }
+ 
+ // Use a fallback image if requested,
+ // or if in embed mode and not #fallback-image=false
+ if (params.fallback_image || (params.embed && params.fallback_image !== false)) {
+  var fallback_img = document.createElement("img");
+  var src = "images/fallback.png";
+  if (typeof params.fallback_image === "string")
+   src = params.fallback_image;
+  fallback_img.setAttribute("src", src);
+  fallback_img.setAttribute("alt", "");
+  fallback_img.style.mozImageRendering = "-moz-crisp-edges";
+  fallback_img.style.imageRendering = "pixelated";
+  fallback_img.setAttribute("style",
+   "image-rendering: -moz-crisp-edges;" +
+   "image-rendering: -o-crisp-edges;" +
+   "image-rendering: -webkit-optimize-contrast;" +
+   "-ms-interpolation-mode: nearest-neighbor;" +
+   "image-rendering: crisp-edges;"
+  );
+  fallback_img.style.width = fallback_img.style.height = "100%";
+  canvas.appendChild(fallback_img);
+  if (params.test_fallback) {
+   canvas.innerHTML = "";
+   canvas.parentElement.insertBefore(fallback_img, canvas);
+   canvas.remove();
+   canvas = fallback_img;
+   canvas.setAttribute("id", "screen");
+   set_screen_size();
+   if (params.embed)
+    canvas.style.background = "transparent";
+  }
+ }
  
  // Initialize X (0-108) and Y (0-76) coordinate arrays
  GDB0 = new Array(100);
