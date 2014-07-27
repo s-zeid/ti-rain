@@ -9,7 +9,6 @@
   <link rel="stylesheet" type="text/css" href="style.css" />
   <meta name="viewport" content="width=320; initial-scale=1; minimum-scale=1" />
   <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
-  <script type="text/javascript" src="prototype.js"></script>
   <script type="text/javascript" src="rain.js"></script>
  </head>
  <body onload="main();">
