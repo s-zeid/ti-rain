@@ -1,12 +1,31 @@
 // Number of raindrops (<=100)
 var R = 35;
 
-var canvas, ctx, scale_factor, B, C, D, E, F, G, I, N, S, T, X, Y, Pic, Pic0, Pic99, GDB0, GDB1;
+var params, canvas, ctx, scale_factor, B, C, D, E, F, G, I, N, S, T, X, Y, Pic, Pic0, Pic99, GDB0, GDB1;
+
+function get_params() {
+ var ret = {};
+ var hash = window.location.hash.replace(/^#/g, "");
+ var parts = hash.split("&");
+ for (var i = 0; i < parts.length; i++) {
+  var part = parts[i], k, v;
+  if (part.match("=")) {
+   var match = part.match(/^([^=]+?)=(.*)$/);
+   k = decodeURIComponent(match[1]);
+   v = decodeURIComponent(match[2]);
+  } else {
+   k = decodeURIComponent(part);
+   v = true;
+  }
+  ret[k] = v;
+ }
+ return ret;
+}
 
 // Determines the screen size.
 function set_screen_size() {
- var viewport_width = document.viewport.getWidth();
- var viewport_height = document.viewport.getHeight();
+ var viewport_width = window.innerWidth;
+ var viewport_height = window.innerHeight;
  if ((typeof(viewport_width) != "undefined") && (typeof(viewport_height) != "undefined")) {
   scale_factor = Math.floor(viewport_height / 64);
   if ((96 * scale_factor) > viewport_width) {
@@ -43,6 +62,16 @@ function draw_rect(x, y, w, h) {
 
 // Main function
 function main() {
+ params = get_params();
+ 
+ // Handle embed mode if requested
+ if (params.embed) {
+  document.getElementById("screen").style.background = "transparent";
+  document.body.style.background = "transparent";
+  document.documentElement.style.background = "transparent";
+  document.getElementById("about").style.display = "none";
+ }
+ 
  // Setup canvas
  canvas = document.getElementById("screen");
  set_screen_size();
