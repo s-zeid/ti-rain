@@ -6,7 +6,43 @@
   <link rel="icon" href="favicon.ico" />
   <script type="module" src="rain-animation.js"></script>
   <meta name="viewport" content="width=320, initial-scale=1, minimum-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <style>
+   :root {
+    --background-main: #cfcfc6;
+    --background-screen: #bdbdb5; --color-screen: #30302d;
+    --background-aside: var(--background-screen); --color-aside: var(--color-screen);
+   }
+   html {
+    font: 19px "Roboto", "Helvetica", "Arial", sans-serif; text-align: center;
+    background: var(--background-main);
+   }
+   html, body, main {
+    width: 100%; height: 100%; margin: 0;
+   }
+   main > rain-animation {
+    display: block; height: 100%; margin: 0 auto;
+    background: var(--background-screen); color: var(--color-screen);
+   }
+   aside {
+    position: absolute; top: 0; right: 0;
+   }
+   aside a {
+    padding: 0.5em 0.5em 0.25em; line-height: 1.375em; text-decoration: none;
+    background: var(--background-aside); color: var(--color-aside);
+   }
+   aside a + a {
+    margin-left: 0.125em;
+   }
+   
+   html.embed {
+    --background-screen: transparent; --color-screen: black;
+    --background-main: transparent;
+    font-size: 0;
+   }
+   html.embed aside {
+    display: none;
+   }
+  </style>
  </head>
  <body>
   <main>
