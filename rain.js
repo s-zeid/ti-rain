@@ -62,6 +62,8 @@ function drawRect(x, y, w, h) {
 // Main function
 function main() {
  params = getParams();
+ if (window.top === window)
+  window.addEventListener("hashchange", () => location.reload());
  
  // Setup canvas
  canvas = document.getElementById("screen");
