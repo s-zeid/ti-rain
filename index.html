@@ -4,12 +4,13 @@
   <meta charset="utf-8" />
   <title>Rain Animation</title>
   <link rel="icon" href="favicon.ico" />
-  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="rain-animation.js"></script>
   <meta name="viewport" content="width=320, initial-scale=1, minimum-scale=1" />
-  <script src="rain.js"></script>
+  <link rel="stylesheet" href="style.css" />
  </head>
  <body>
   <main>
+   <rain-animation>This animation requires a modern Web browser.</rain-animation>
    <noscript>This animation requires JavaScript to be enabled.</noscript>
   </main>
   <aside>
@@ -17,8 +18,19 @@
    <a href="https://code.s.zeid.me/ti-rain">Source</a>
   </aside>
   <script>
-   window.rain = new Rain(document.querySelector("main"));
-   window.rain.hideIfEmbedded = document.querySelector("aside");
+   (function() {
+    function handleEmbedParam() {
+     var hash = location.hash.toLowerCase();
+     if (hash.match(/(^#|&)embed(&|$)/)) {
+      document.documentElement.classList.add("embed");
+     } else {
+      document.documentElement.classList.remove("embed");
+     }
+    }
+    window.addEventListener("hashchange", handleEmbedParam);
+    handleEmbedParam();
+   })();
+   window.rain = document.querySelector("rain-animation");
   </script>
  </body>
 </html>

@@ -8,14 +8,13 @@
 html {
  background: var(--background-main);
  font: 19px "Roboto", "Helvetica", "Arial", sans-serif;
+ text-align: center;
 }
-body, main {
- position: absolute; top: 0; right: 0; bottom: 0; left: 0;
- margin: 0;
+html, body, main {
+ width: 100%; height: 100%; margin: 0;
 }
-main > [data-rain] {
- position: absolute; top: 0; right: 0; bottom: 0; left: 0;
- margin: auto;
+main > rain-animation {
+ display: block; height: 100%; margin: 0 auto;
  background: var(--background-screen);
  color: var(--color-screen);
 }
@@ -31,4 +30,13 @@ aside a {
 }
 aside a + a {
  margin-left: 0.125em;
+}
+
+html.embed {
+ --background-screen: transparent; --color-screen: black;
+ --background-main: transparent;
+ font-size: 0;
+}
+html.embed aside {
+ display: none;
 }

@@ -1,38 +1,63 @@
-class Rain {
- // Number of raindrops (<=100)
- get R() { return 35; }
+export default
+(element => { customElements.define(element.NAME, element); return element; })
+(class RainAnimation extends HTMLElement {
+ static get NAME() { return "rain-animation"; }
  
- // Hide the given element(s) if the animation is embedded.
- // The value may be an array of Elements, a single Element, or null.
- get hideIfEmbedded() {
-  return this._hideIfEmbedded || [];
+ static get CSS() { return /* css */ `
+  :host(:not([hidden])) {
+   display: inline-block; aspect-ratio: 96 / 64; overflow: hidden;
+  }
+  figure {
+   display: flex; align-items: center; justify-content: center; text-align: center;
+  }
+  figure, figure > * {
+   width: 100%; height: 100%; margin: 0;
+  }
+ `; }
+ 
+ static get HTML() { return /* html */ `
+  <figure></figure>
+ `; }
+ 
+ // Which version of the background sprites to use.
+ // Valid values are 1 and 2 (default).
+ get bgVersion() {
+  return this._bgVersion;
  }
- set hideIfEmbedded(value) {
-  value = (value ? ((value instanceof Element) ? [value] : value) : []);
-  const oldValue = this.hideIfEmbedded;
-  this._hideIfEmbedded = value;
-  for (const el of oldValue) {
-   el.hidden = false;
-  }
-  if (this.params["embed"]) {
-   for (const el of value) {
-    el.hidden = true;
-   }
-  }
+ set bgVersion(value) {
+  if (this.getAttribute("bg-version") != String(value))
+   this.setAttribute("bg-version", String(value));
+  this._bgVersion = Number(value) || 2;
  }
  
- // Start the animation and add it to the given host element.
- constructor(host) {
-  if (!(host instanceof Element))
-   throw new TypeError("host must be an element");
+ // Whether to display the fallback image.
+ // True if the attribute is present; false if omitted or set to "false".
+ // If set to a non-empty string other than "true" or "false", the value
+ // will be the path to the fallback image.
+ get fallbackImage() {
+  let value = this.getAttribute("fallback-image");
+  if (value == null || (value != "" && value.toLowerCase() == "false"))
+   value = false;
+  else if (value == "" || value.toLowerCase() == "true")
+   value = true;
+  return value;
+ }
+ 
+ static get observedAttributes() { return ["bg-version"]; }
+ 
+ constructor() {
+  super();
+  const shadowRoot = this.attachShadow({mode: "open"});
+  shadowRoot.innerHTML = `<style>${this.constructor.CSS}</style>${this.constructor.HTML}`; 
   
   // Instance state
-  this.params = this.constructor.getParams();
+  this.figure = this.shadowRoot.querySelector("figure");
   this.canvas = document.createElement("canvas");
   this.ctx = this.canvas.getContext("2d");
   this.scaleFactor = 0;
   
   // Animation state (nulls are unused)
+  this.R = 35;  // Number of raindrops (<=100)
   this.B = 0; // BG Number
   this.C = null;
   this.D = null;
@@ -63,15 +88,9 @@ class Rain {
   // Animation options
   this.bgVersion = 2;
   
-  // Setup host environment
-  this.canvas.hidden = true;
-  host.appendChild(this.canvas);
-  window.addEventListener("resize", this.setScreenSize.bind(this));
-  if (window.top === window)
-   window.addEventListener("hashchange", () => location.reload());
-  
   // Setup canvas
-  this.canvas.setAttribute("data-rain", "");
+  this.canvas.hidden = true;
+  this.figure.appendChild(this.canvas);
   if (this.canvas instanceof HTMLCanvasElement) {
    this.canvas.width = 96;
    this.canvas.height = 64;
@@ -79,77 +98,74 @@ class Rain {
    this.makePixelated();
   }
   this.canvas.innerHTML = `
-   Please upgrade your browser to one that supports the HTML5 Canvas element.
+   This animation requires a modern Web browser.
   `.trim();
   this.canvas.hidden = false;
   
-  // Handle embed mode if requested
-  if (this.params["embed"]) {
-   this.canvas.style.background = "transparent";
-   this.canvas.style.color = "black";
-   document.body.style.background = "transparent";
-   document.documentElement.style.background = "transparent";
-  }
+  // Initialize mutable attribute values
+  this.bgVersion = this.bgVersion;
   
-  // Set runtime canvas options
-  this.ctx.fillStyle = window.getComputedStyle(this.canvas).color;
-  
-  // Set runtime animation options
-  if (Number(this.params["bg-version"]) > 0) {
-   const bgVersion = this.params["bg-version"];
-   if (bgVersion >= 1 && bgVersion <= 2)
-    this.bgVersion = bgVersion;
-  }
-  
-  // Use a fallback image if requested,
-  // or if in embed mode and not #fallback-image=false
-  if (
-   this.params["fallback-image"] ||
-   (this.params["embed"] && this.params["fallback-image"] !== false)
-  ) {
+  // Use a fallback image if not disabled
+  if (this.fallbackImage) {
    const fallbackImg = document.createElement("img");
-   let src = "images/fallback.png";
-   if (typeof this.params["fallback-image"] == "string")
-    src = this.params["fallback-image"];
+   let src = this.constructor.FALLBACK_IMAGE;
+   if (typeof this.fallbackImage == "string")
+    src = this.fallbackImage;
    fallbackImg.setAttribute("src", src);
    fallbackImg.setAttribute("alt", "");
    fallbackImg.style.width = fallbackImg.style.height = "100%";
-   this.canvas.appendChild(fallbackImg);
-   if (this.params["test-fallback"]) {
-    this.canvas.innerHTML = "";
-    this.canvas.parentElement.insertBefore(fallbackImg, this.canvas);
-    this.canvas.remove();
-    this.canvas = fallbackImg;
-    this.canvas.setAttribute("data-rain", "");
-    this.setScreenSize();
-    this.makePixelated();
-    if (this.params["embed"])
-     this.canvas.style.background = "transparent";
-   }
+   this.canvas.innerHTML = "";
+   this.canvas.parentElement.insertBefore(fallbackImg, this.canvas);
+   this.canvas.remove();
+   this.canvas = fallbackImg;
+   this.setScreenSize();
+   this.makePixelated();
   }
+  
+  // Setup resize observer
+  this.resizeObserver = new ResizeObserver(entries => {
+   for (const entry of entries) {
+    this.setScreenSize();
+    this.setCtxState();
+   }
+  });
+  this.resizeObserver.observe(this);
   
   setInterval(this.loop.bind(this), this.L);
  }
  
- // Gets hash parameters, formatted as if query string parameters.
- // Values of "true" and "false" will be converted to Booleans.
- // Parameters with no value will be set to the Boolean value true.
- static getParams(hash) {
-  const result = {};
-  hash = (hash || location.hash).replace(/^#/, "");
-  for (let [k, v] of new URLSearchParams(hash)) {
-   if (v.toLowerCase() === "true" || v.length === 0)
-    v = true;
-   else if (v.toLowerCase() === "false")
-    v = false;
-   result[k] = v;
-  }
-  return result;
+ isTopLevel() {
+  return (
+   this.parentNode == document.body ||
+   this.parentNode == document.querySelector("main > :first-child")
+  );
  }
  
- // Returns a random integer from 0 to maximum.
- static randomInt(maximum) {
-  return Math.floor(Math.random() * (maximum));
+ connectedCallback() {
+  this.setScreenSize();
+  this.setCtxState();
+  if (this.isTopLevel) {
+   this.setAttributesFromParams(location.hash);
+   window.addEventListener("hashchange", () => {
+    this.setAttributesFromParams(location.hash);
+   });
+  }
+ }
+ 
+ attributeChangedCallback(name, oldValue, newValue) {
+  name = name.toLowerCase().replace(/-[a-z]/g, match => match[1].toUpperCase());
+  if (oldValue !== newValue)
+   this[name] = newValue;
+ }
+ 
+ // Sets mutable attributes from the given search or hash parameters.
+ setAttributesFromParams(params) {
+  const attributes = this.constructor.observedAttributes;
+  params = params.replace(/^[?#]/, "");
+  for (let [k, v] of new URLSearchParams(params)) {
+   if (attributes.indexOf(k) > -1)
+    this.setAttribute(k, v);
+  }
  }
  
  // Makes the canvas or fallback image pixelated when upscaled.
@@ -160,17 +176,21 @@ class Rain {
    this.canvas.style.imageRendering = "optimizeSpeed";
  }
  
+ // Set the draw settings.
+ setCtxState() {
+  this.ctx.fillStyle = window.getComputedStyle(this).color;
+ }
+ 
  // Determines the screen size.
  setScreenSize() {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  if (typeof viewportWidth != "undefined" && typeof viewportHeight != "undefined") {
-   this.scaleFactor = Math.floor(viewportHeight / 64);
-   if ((96 * this.scaleFactor) > viewportWidth) {
-    this.scaleFactor = Math.floor(viewportWidth / 96);
+  this.canvas.style.width = this.canvas.style.height = "0";
+  let hostRect = this.getBoundingClientRect();
+  if (hostRect.width && hostRect.height) {
+   this.scaleFactor = Math.floor(hostRect.height / 64);
+   if ((96 * this.scaleFactor) > hostRect.width) {
+    this.scaleFactor = Math.floor(hostRect.width / 96);
    }
-  }
-  else {
+  } else {
    this.scaleFactor = 3;
   }
   const width = 96 * this.scaleFactor;
@@ -179,6 +199,17 @@ class Rain {
   this.canvas.height = height;
   this.canvas.style.width = String(width) + "px";
   this.canvas.style.height = String(height) + "px";
+  hostRect = this.getBoundingClientRect();
+  this.style.clipPath = `inset(${
+   String((hostRect.height - height) / 2)
+  }px ${
+   String((hostRect.width - width) / 2)
+  }px)`;
+ }
+ 
+ // Returns a random integer in the range [0, maximum).
+ static randomInt(maximum) {
+  return Math.floor(Math.random() * maximum);
  }
  
  // Draws the background and appropriate raindrops.
@@ -187,7 +218,7 @@ class Rain {
   // Draw BG
   for (this.Y=0;this.Y<8;this.Y++) {
    for (this.X=0;this.X<12;this.X++) {
-    this.drawBgSprite(this.X, this.Y, this.B, this.bgVersion);
+    this.drawBgSprite(this.X, this.Y, this.B, this._bgVersion);
    }
   }
   this.B = this.B+1;
@@ -304,4 +335,8 @@ class Rain {
    v==2 && this.drawRect(x*8 + 5, y*8 + 3, 1, 4);
   }
  }
-}
+ 
+ static get FALLBACK_IMAGE() {
+  return "images/fallback.png";
+ }
+});
