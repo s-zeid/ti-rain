@@ -8,15 +8,17 @@
   <meta name="viewport" content="width=320, initial-scale=1, minimum-scale=1" />
   <script src="rain.js"></script>
  </head>
- <body onload="window.app = new Rain();">
+ <body>
   <main>
-   <canvas id="screen" width="96" height="64">
-    Please upgrade your browser to one that supports the HTML5 Canvas element.
-   </canvas>
+   <noscript>This animation requires JavaScript to be enabled.</noscript>
   </main>
   <aside>
    <a href="https://s.zeid.me/projects/rain/">About</a>
    <a href="https://code.s.zeid.me/ti-rain">Source</a>
   </aside>
+  <script>
+   window.rain = new Rain(document.querySelector("main"));
+   window.rain.hideIfEmbedded = document.querySelector("aside");
+  </script>
  </body>
 </html>
