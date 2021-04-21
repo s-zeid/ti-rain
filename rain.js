@@ -74,10 +74,14 @@ function main() {
  // Handle embed mode if requested
  if (params["embed"]) {
   canvas.style.background = "transparent";
+  canvas.style.color = "black";
   document.body.style.background = "transparent";
   document.documentElement.style.background = "transparent";
   document.querySelector("aside").style.display = "none";
  }
+ 
+ // Set runtime canvas options
+ ctx.fillStyle = window.getComputedStyle(canvas).color;
  
  // Use a fallback image if requested,
  // or if in embed mode and not #fallback-image=false

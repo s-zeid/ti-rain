@@ -1,8 +1,9 @@
 :root {
  --background-main: #cfcfc6;
  --background-screen: #bdbdb5;
+ --color-screen: #30302d;
  --background-aside: var(--background-screen);
- --color-aside: #30302d;
+ --color-aside: var(--color-screen);
 }
 html {
  background: var(--background-main);
@@ -16,6 +17,7 @@ body, main {
  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
  margin: auto;
  background: var(--background-screen);
+ color: var(--color-screen);
 }
 aside {
  position: absolute; top: 0; right: 0;
