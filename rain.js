@@ -76,7 +76,7 @@ class Rain {
    this.canvas.width = 96;
    this.canvas.height = 64;
    this.setScreenSize();
-   this.ctx.mozImageSmoothingEnabled = false;
+   this.makePixelated();
   }
   this.canvas.innerHTML = `
    Please upgrade your browser to one that supports the HTML5 Canvas element.
@@ -113,10 +113,6 @@ class Rain {
     src = this.params["fallback-image"];
    fallbackImg.setAttribute("src", src);
    fallbackImg.setAttribute("alt", "");
-   if (CSS.supports("image-rendering: pixelated"))
-    fallbackImg.style.imageRendering = "pixelated";
-   else
-    fallbackImg.style.imageRendering = "optimizeSpeed";
    fallbackImg.style.width = fallbackImg.style.height = "100%";
    this.canvas.appendChild(fallbackImg);
    if (this.params["test-fallback"]) {
@@ -126,6 +122,7 @@ class Rain {
     this.canvas = fallbackImg;
     this.canvas.setAttribute("data-rain", "");
     this.setScreenSize();
+    this.makePixelated();
     if (this.params["embed"])
      this.canvas.style.background = "transparent";
    }
@@ -153,6 +150,14 @@ class Rain {
  // Returns a random integer from 0 to maximum.
  static randomInt(maximum) {
   return Math.floor(Math.random() * (maximum));
+ }
+ 
+ // Makes the canvas or fallback image pixelated when upscaled.
+ makePixelated() {
+  if (CSS.supports("image-rendering: pixelated"))
+   this.canvas.style.imageRendering = "pixelated";
+  else
+   this.canvas.style.imageRendering = "optimizeSpeed";
  }
  
  // Determines the screen size.
