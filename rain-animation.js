@@ -30,19 +30,6 @@ export default
   this._bgVersion = Number(value) || 2;
  }
  
- // Whether to display the fallback image.
- // True if the attribute is present; false if omitted or set to "false".
- // If set to a non-empty string other than "true" or "false", the value
- // will be the path to the fallback image.
- get fallbackImage() {
-  let value = this.getAttribute("fallback-image");
-  if (value == null || (value != "" && value.toLowerCase() == "false"))
-   value = false;
-  else if (value == "" || value.toLowerCase() == "true")
-   value = true;
-  return value;
- }
- 
  static get observedAttributes() { return ["bg-version"]; }
  
  constructor() {
@@ -95,7 +82,10 @@ export default
    this.canvas.width = 96;
    this.canvas.height = 64;
    this.setScreenSize();
-   this.makePixelated();
+   if (CSS.supports("image-rendering: pixelated"))
+    this.canvas.style.imageRendering = "pixelated";
+   else
+    this.canvas.style.imageRendering = "optimizeSpeed";
   }
   this.canvas.innerHTML = `
    This animation requires a modern Web browser.
@@ -104,23 +94,6 @@ export default
   
   // Initialize mutable attribute values
   this.bgVersion = this.bgVersion;
-  
-  // Use a fallback image if not disabled
-  if (this.fallbackImage) {
-   const fallbackImg = document.createElement("img");
-   let src = this.constructor.FALLBACK_IMAGE;
-   if (typeof this.fallbackImage == "string")
-    src = this.fallbackImage;
-   fallbackImg.setAttribute("src", src);
-   fallbackImg.setAttribute("alt", "");
-   fallbackImg.style.width = fallbackImg.style.height = "100%";
-   this.canvas.innerHTML = "";
-   this.canvas.parentElement.insertBefore(fallbackImg, this.canvas);
-   this.canvas.remove();
-   this.canvas = fallbackImg;
-   this.setScreenSize();
-   this.makePixelated();
-  }
   
   // Setup resize observer
   this.resizeObserver = new ResizeObserver(entries => {
@@ -166,14 +139,6 @@ export default
    if (attributes.indexOf(k) > -1)
     this.setAttribute(k, v);
   }
- }
- 
- // Makes the canvas or fallback image pixelated when upscaled.
- makePixelated() {
-  if (CSS.supports("image-rendering: pixelated"))
-   this.canvas.style.imageRendering = "pixelated";
-  else
-   this.canvas.style.imageRendering = "optimizeSpeed";
  }
  
  // Set the draw settings.
@@ -334,9 +299,5 @@ export default
    v==1 && this.drawRect(x*8 + 5, y*8 + 1, 1, 4);
    v==2 && this.drawRect(x*8 + 5, y*8 + 3, 1, 4);
   }
- }
- 
- static get FALLBACK_IMAGE() {
-  return "images/fallback.png";
  }
 });
