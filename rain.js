@@ -1,120 +1,105 @@
 // Number of raindrops (<=100)
-var R = 35;
+const R = 35;
 
-var params, canvas, ctx, scale_factor, B, C, D, E, F, G, I, N, S, T, X, Y, Pic, Pic0, Pic99, GDB0, GDB1;
+let params, canvas, ctx, scaleFactor;
+let B, C, D, E, F, G, I, N, S, T, X, Y, Pic, Pic0, Pic99, GDB0, GDB1;
 
-function get_params() {
- var ret = {};
- var hash = window.location.hash.replace(/^#/g, "");
- var parts = hash.split("&");
- for (var i = 0; i < parts.length; i++) {
-  var part = parts[i], k, v;
-  if (k == "") continue;
-  if (part.match("=")) {
-   var match = part.match(/^([^=]+?)=(.*)$/);
-   k = decodeURIComponent(match[1]);
-   v = decodeURIComponent(match[2]);
-   if (v.toLowerCase() === "true")
-    v = true;
-   if (v.toLowerCase() === "false")
-    v = false;
-  } else {
-   k = decodeURIComponent(part);
+function getParams() {
+ const result = {};
+ const hash = location.hash.replace(/^#/, "");
+ for (let [k, v] of new URLSearchParams(hash)) {
+  if (v.toLowerCase() === "true" || v.length === 0)
    v = true;
-  }
-  ret[k.replace("-", "_")] = v;
+  else if (v.toLowerCase() === "false")
+   v = false;
+  result[k] = v;
  }
- return ret;
+ return result;
 }
 
 // Determines the screen size.
-function set_screen_size() {
- var viewport_width = window.innerWidth;
- var viewport_height = window.innerHeight;
- if ((typeof(viewport_width) != "undefined") && (typeof(viewport_height) != "undefined")) {
-  scale_factor = Math.floor(viewport_height / 64);
-  if ((96 * scale_factor) > viewport_width) {
-   scale_factor = Math.floor(viewport_width / 96);
+function setScreenSize() {
+ const viewportWidth = window.innerWidth;
+ const viewportHeight = window.innerHeight;
+ if (typeof viewportWidth != "undefined" && typeof viewportHeight != "undefined") {
+  scaleFactor = Math.floor(viewportHeight / 64);
+  if ((96 * scaleFactor) > viewportWidth) {
+   scaleFactor = Math.floor(viewportWidth / 96);
   }
  }
  else {
-  scale_factor = 3;
+  scaleFactor = 3;
  }
- var width = 96 * scale_factor;
- var height = 64 * scale_factor;
+ const width = 96 * scaleFactor;
+ const height = 64 * scaleFactor;
  canvas.width = width;
  canvas.height = height;
  canvas.style.width = String(width) + "px";
  canvas.style.height = String(height) + "px";
 }
-window.onresize = set_screen_size;
+window.addEventListener("resize", () => setScreenSize());
 
 // Returns an Image object with the image specified by src.
 function load_image(src) {
- var img = new Image();
+ const img = new Image();
  img.src = src;
  return img;
 }
 // Returns a random integer from 0 to (maximum - 1).
-function random_int(maximum) {
+function randomInt(maximum) {
  return Math.floor(Math.random() * (maximum));
 }
 // Clears the entire canvas.
-function clear_screen() {
+function clearScreen() {
  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 // Draws a rectangle, scaling it and its position to correspond to the canvas
 // size.
-function draw_rect(x, y, w, h) {
- ctx.fillRect(x * scale_factor, y * scale_factor, w * scale_factor, h * scale_factor);
+function drawRect(x, y, w, h) {
+ ctx.fillRect(x * scaleFactor, y * scaleFactor, w * scaleFactor, h * scaleFactor);
 }
 
 // Main function
 function main() {
- params = get_params();
+ params = getParams();
  
  // Setup canvas
  canvas = document.getElementById("screen");
- set_screen_size();
- ctx = canvas.getContext('2d');
+ setScreenSize();
+ ctx = canvas.getContext("2d");
  ctx.mozImageSmoothingEnabled = false;
  
  // Handle embed mode if requested
- if (params.embed) {
+ if (params["embed"]) {
   canvas.style.background = "transparent";
   document.body.style.background = "transparent";
   document.documentElement.style.background = "transparent";
-  document.getElementById("about").style.display = "none";
+  document.querySelector("aside").style.display = "none";
  }
  
  // Use a fallback image if requested,
  // or if in embed mode and not #fallback-image=false
- if (params.fallback_image || (params.embed && params.fallback_image !== false)) {
-  var fallback_img = document.createElement("img");
-  var src = "images/fallback.png";
-  if (typeof params.fallback_image === "string")
-   src = params.fallback_image;
-  fallback_img.setAttribute("src", src);
-  fallback_img.setAttribute("alt", "");
-  fallback_img.style.mozImageRendering = "-moz-crisp-edges";
-  fallback_img.style.imageRendering = "pixelated";
-  fallback_img.setAttribute("style",
-   "image-rendering: -moz-crisp-edges;" +
-   "image-rendering: -o-crisp-edges;" +
-   "image-rendering: -webkit-optimize-contrast;" +
-   "-ms-interpolation-mode: nearest-neighbor;" +
-   "image-rendering: crisp-edges;"
-  );
-  fallback_img.style.width = fallback_img.style.height = "100%";
-  canvas.appendChild(fallback_img);
-  if (params.test_fallback) {
+ if (params["fallback-image"] || (params["embed"] && params["fallback-image"] !== false)) {
+  const fallbackImg = document.createElement("img");
+  let src = "images/fallback.png";
+  if (typeof params["fallback-image"] == "string")
+   src = params["fallback-image"];
+  fallbackImg.setAttribute("src", src);
+  fallbackImg.setAttribute("alt", "");
+  if (CSS.supports("image-rendering: pixelated"))
+   fallbackImg.style.imageRendering = "pixelated";
+  else
+   fallbackImg.style.imageRendering = "optimizeSpeed";
+  fallbackImg.style.width = fallbackImg.style.height = "100%";
+  canvas.appendChild(fallbackImg);
+  if (params["test-fallback"]) {
    canvas.innerHTML = "";
-   canvas.parentElement.insertBefore(fallback_img, canvas);
+   canvas.parentElement.insertBefore(fallbackImg, canvas);
    canvas.remove();
-   canvas = fallback_img;
+   canvas = fallbackImg;
    canvas.setAttribute("id", "screen");
-   set_screen_size();
-   if (params.embed)
+   setScreenSize();
+   if (params["embed"])
     canvas.style.background = "transparent";
   }
  }
@@ -125,8 +110,8 @@ function main() {
  
  // Set initial coordinates
  for (A=0;A<R;A++) {
-  GDB0[A] = random_int(109);
-  GDB1[A] = random_int(77);
+  GDB0[A] = randomInt(109);
+  GDB1[A] = randomInt(77);
  }
  
  B = 0; // BG Number
@@ -143,11 +128,11 @@ function main() {
 }
 // Draws the background and appropriate raindrops.
 function loop() {
- clear_screen();
+ clearScreen();
  // Draw BG
  for (Y=0;Y<8;Y++) {
   for (X=0;X<12;X++) {
-   draw_bg_sprite(X, Y, B);
+   drawBgSprite(X, Y, B);
   }
  }
  B = B+1;
@@ -159,14 +144,14 @@ function loop() {
   X = GDB0[A];
   Y = GDB1[A];
   if (I==0 || A<=N) {
-   draw_raindrop(X-5, Y-3);
+   drawRaindrop(X-5, Y-3);
    if (T==M) {
     Y = Y+1;
    }
   }
   if (Y>76) {
-   X = random_int(109);
-   Y = random_int(77);
+   X = randomInt(109);
+   Y = randomInt(77);
   }
   GDB0[A] = X;
   GDB1[A] = Y;
@@ -186,91 +171,91 @@ function loop() {
 }
 // Draws a raindrop, scaling it and its position to correspond to the canvas
 // size.
-function draw_raindrop(x, y) {
- draw_rect(x + 3, y + 0, 2, 1);
- draw_rect(x + 2, y + 1, 1, 2);
- draw_rect(x + 5, y + 1, 1, 2);
- draw_rect(x + 1, y + 3, 1, 3);
- draw_rect(x + 6, y + 3, 1, 3);
- draw_rect(x + 2, y + 6, 1, 1);
- draw_rect(x + 5, y + 6, 1, 1);
- draw_rect(x + 3, y + 7, 2, 1);
+function drawRaindrop(x, y) {
+ drawRect(x + 3, y + 0, 2, 1);
+ drawRect(x + 2, y + 1, 1, 2);
+ drawRect(x + 5, y + 1, 1, 2);
+ drawRect(x + 1, y + 3, 1, 3);
+ drawRect(x + 6, y + 3, 1, 3);
+ drawRect(x + 2, y + 6, 1, 1);
+ drawRect(x + 5, y + 6, 1, 1);
+ drawRect(x + 3, y + 7, 2, 1);
 }
-function draw_bg_sprite(x, y, n) {
+function drawBgSprite(x, y, n) {
  if (n == 0) {
-  draw_rect(x*8 + 1, y*8 + 0, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 4, 1, 4);
+  drawRect(x*8 + 1, y*8 + 0, 1, 4);
+  drawRect(x*8 + 5, y*8 + 4, 1, 4);
  }
  if (n == 1) {
-  draw_rect(x*8 + 1, y*8 + 1, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 5, 1, 3);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 1);
+  drawRect(x*8 + 1, y*8 + 1, 1, 4);
+  drawRect(x*8 + 5, y*8 + 5, 1, 3);
+  drawRect(x*8 + 5, y*8 + 0, 1, 1);
  }
  if (n == 2) {
-  draw_rect(x*8 + 1, y*8 + 2, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 6, 1, 2);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 2);
+  drawRect(x*8 + 1, y*8 + 2, 1, 4);
+  drawRect(x*8 + 5, y*8 + 6, 1, 2);
+  drawRect(x*8 + 5, y*8 + 0, 1, 2);
  }
  if (n == 3) {
-  draw_rect(x*8 + 1, y*8 + 3, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 7, 1, 1);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 3);
+  drawRect(x*8 + 1, y*8 + 3, 1, 4);
+  drawRect(x*8 + 5, y*8 + 7, 1, 1);
+  drawRect(x*8 + 5, y*8 + 0, 1, 3);
  }
  if (n == 4) {
-  draw_rect(x*8 + 1, y*8 + 4, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 4);
+  drawRect(x*8 + 1, y*8 + 4, 1, 4);
+  drawRect(x*8 + 5, y*8 + 0, 1, 4);
  }
  if (n == 5) {
-  draw_rect(x*8 + 1, y*8 + 5, 1, 3);
-  draw_rect(x*8 + 1, y*8 + 0, 1, 1);
-  draw_rect(x*8 + 5, y*8 + 1, 1, 4);
+  drawRect(x*8 + 1, y*8 + 5, 1, 3);
+  drawRect(x*8 + 1, y*8 + 0, 1, 1);
+  drawRect(x*8 + 5, y*8 + 1, 1, 4);
  }
  if (n == 6) {
-  draw_rect(x*8 + 1, y*8 + 6, 1, 2);
-  draw_rect(x*8 + 1, y*8 + 0, 1, 2);
-  draw_rect(x*8 + 5, y*8 + 2, 1, 4);
+  drawRect(x*8 + 1, y*8 + 6, 1, 2);
+  drawRect(x*8 + 1, y*8 + 0, 1, 2);
+  drawRect(x*8 + 5, y*8 + 2, 1, 4);
  }
  if (n == 7) {
-  draw_rect(x*8 + 1, y*8 + 7, 1, 1);
-  draw_rect(x*8 + 1, y*8 + 0, 1, 3);
-  draw_rect(x*8 + 5, y*8 + 3, 1, 4);
+  drawRect(x*8 + 1, y*8 + 7, 1, 1);
+  drawRect(x*8 + 1, y*8 + 0, 1, 3);
+  drawRect(x*8 + 5, y*8 + 3, 1, 4);
  }
  /*if (n == 0) {
-  draw_rect(x*8 + 1, y*8 + 0, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 2, 1, 4);
+  drawRect(x*8 + 1, y*8 + 0, 1, 4);
+  drawRect(x*8 + 5, y*8 + 2, 1, 4);
  }
  if (n == 1) {
-  draw_rect(x*8 + 1, y*8 + 1, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 3, 1, 4);
+  drawRect(x*8 + 1, y*8 + 1, 1, 4);
+  drawRect(x*8 + 5, y*8 + 3, 1, 4);
  }
  if (n == 2) {
-  draw_rect(x*8 + 1, y*8 + 2, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 4, 1, 4);
+  drawRect(x*8 + 1, y*8 + 2, 1, 4);
+  drawRect(x*8 + 5, y*8 + 4, 1, 4);
  }
  if (n == 3) {
-  draw_rect(x*8 + 1, y*8 + 3, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 5, 1, 3);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 1);
+  drawRect(x*8 + 1, y*8 + 3, 1, 4);
+  drawRect(x*8 + 5, y*8 + 5, 1, 3);
+  drawRect(x*8 + 5, y*8 + 0, 1, 1);
  }
  if (n == 4) {
-  draw_rect(x*8 + 1, y*8 + 4, 1, 4);
-  draw_rect(x*8 + 5, y*8 + 6, 1, 2);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 2);
+  drawRect(x*8 + 1, y*8 + 4, 1, 4);
+  drawRect(x*8 + 5, y*8 + 6, 1, 2);
+  drawRect(x*8 + 5, y*8 + 0, 1, 2);
  }
  if (n == 5) {
-  draw_rect(x*8 + 1, y*8 + 5, 1, 3);
-  draw_rect(x*8 + 1, y*8 + 0, 1, 1);
-  draw_rect(x*8 + 5, y*8 + 7, 1, 1);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 3);
+  drawRect(x*8 + 1, y*8 + 5, 1, 3);
+  drawRect(x*8 + 1, y*8 + 0, 1, 1);
+  drawRect(x*8 + 5, y*8 + 7, 1, 1);
+  drawRect(x*8 + 5, y*8 + 0, 1, 3);
  }
  if (n == 6) {
-  draw_rect(x*8 + 1, y*8 + 6, 1, 2);
-  draw_rect(x*8 + 1, y*8 + 0, 1, 2);
-  draw_rect(x*8 + 5, y*8 + 0, 1, 4);
+  drawRect(x*8 + 1, y*8 + 6, 1, 2);
+  drawRect(x*8 + 1, y*8 + 0, 1, 2);
+  drawRect(x*8 + 5, y*8 + 0, 1, 4);
  }
  if (n == 7) {
-  draw_rect(x*8 + 1, y*8 + 7, 1, 1);
-  draw_rect(x*8 + 1, y*8 + 0, 1, 3);
-  draw_rect(x*8 + 5, y*8 + 1, 1, 4);
+  drawRect(x*8 + 1, y*8 + 7, 1, 1);
+  drawRect(x*8 + 1, y*8 + 0, 1, 3);
+  drawRect(x*8 + 5, y*8 + 1, 1, 4);
  }*/
 }

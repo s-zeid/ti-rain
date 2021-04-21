@@ -1,29 +1,32 @@
-html {
- background-color: #CFCFC6;
- font-family: "Ubuntu", "DejaVu Sans", "Bitstream Vera Sans", "Verdana",
-              sans-serif;
- font-size: 0.8em;
+:root {
+ --background-main: #cfcfc6;
+ --background-screen: #bdbdb5;
+ --background-aside: var(--background-screen);
+ --color-aside: #30302d;
 }
-body {
- height: 100%;
- margin: 0;
+html {
+ background: var(--background-main);
+ font: 19px "Roboto", "Helvetica", "Arial", sans-serif;
+}
+body, main {
  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+ margin: 0;
 }
 #screen {
  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
  margin: auto;
- background-color: #BDBDB5;
+ background: var(--background-screen);
 }
-#about {
+aside {
  position: absolute; top: 0; right: 0;
 }
-#about a {
+aside a {
  line-height: 1.375em;
- padding: .5em .5em .25em;
+ padding: 0.5em 0.5em 0.25em;
  text-decoration: none;
- background-color: #BDBDB5;
- color: #40403D;
+ background: var(--background-aside);
+ color: var(--color-aside);
 }
-#about a + a {
- margin-left: .125em;
+aside a + a {
+ margin-left: 0.125em;
 }
