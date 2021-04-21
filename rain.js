@@ -24,6 +24,9 @@ class Rain {
   this.GDB0 = null;
   this.GDB1 = null;
   
+  // Animation options
+  this.bgVersion = 2;
+  
   this.main();
  }
  
@@ -106,6 +109,13 @@ class Rain {
   // Set runtime canvas options
   this.ctx.fillStyle = window.getComputedStyle(this.canvas).color;
   
+  // Set runtime animation options
+  if (Number(this.params["bg-version"]) > 0) {
+   const bgVersion = this.params["bg-version"];
+   if (bgVersion >= 1 && bgVersion <= 2)
+    this.bgVersion = bgVersion;
+  }
+  
   // Use a fallback image if requested,
   // or if in embed mode and not #fallback-image=false
   if (
@@ -165,7 +175,7 @@ class Rain {
   // Draw BG
   for (this.Y=0;this.Y<8;this.Y++) {
    for (this.X=0;this.X<12;this.X++) {
-    this.drawBgSprite(this.X, this.Y, this.B);
+    this.drawBgSprite(this.X, this.Y, this.B, this.bgVersion);
    }
   }
   this.B = this.B+1;
@@ -217,82 +227,55 @@ class Rain {
  }
  
  // Draws the background rain.
- drawBgSprite(x, y, n) {
+ drawBgSprite(x, y, n, v) {
   if (n == 0) {
    this.drawRect(x*8 + 1, y*8 + 0, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 4, 1, 4);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 2, 1, 4);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 4, 1, 4);
   }
   if (n == 1) {
    this.drawRect(x*8 + 1, y*8 + 1, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 5, 1, 3);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 1);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 3, 1, 4);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 5, 1, 3);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 0, 1, 1);
   }
   if (n == 2) {
    this.drawRect(x*8 + 1, y*8 + 2, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 6, 1, 2);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 2);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 4, 1, 4);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 6, 1, 2);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 0, 1, 2);
   }
   if (n == 3) {
    this.drawRect(x*8 + 1, y*8 + 3, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 7, 1, 1);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 3);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 5, 1, 3);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 0, 1, 1);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 7, 1, 1);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 0, 1, 3);
   }
   if (n == 4) {
    this.drawRect(x*8 + 1, y*8 + 4, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 4);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 6, 1, 2);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 0, 1, 2);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 0, 1, 4);
   }
   if (n == 5) {
    this.drawRect(x*8 + 1, y*8 + 5, 1, 3);
    this.drawRect(x*8 + 1, y*8 + 0, 1, 1);
-   this.drawRect(x*8 + 5, y*8 + 1, 1, 4);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 7, 1, 1);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 0, 1, 3);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 1, 1, 4);
   }
   if (n == 6) {
    this.drawRect(x*8 + 1, y*8 + 6, 1, 2);
    this.drawRect(x*8 + 1, y*8 + 0, 1, 2);
-   this.drawRect(x*8 + 5, y*8 + 2, 1, 4);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 0, 1, 4);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 2, 1, 4);
   }
   if (n == 7) {
    this.drawRect(x*8 + 1, y*8 + 7, 1, 1);
    this.drawRect(x*8 + 1, y*8 + 0, 1, 3);
-   this.drawRect(x*8 + 5, y*8 + 3, 1, 4);
+   v==1 && this.drawRect(x*8 + 5, y*8 + 1, 1, 4);
+   v==2 && this.drawRect(x*8 + 5, y*8 + 3, 1, 4);
   }
-  /*if (n == 0) {
-   this.drawRect(x*8 + 1, y*8 + 0, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 2, 1, 4);
-  }
-  if (n == 1) {
-   this.drawRect(x*8 + 1, y*8 + 1, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 3, 1, 4);
-  }
-  if (n == 2) {
-   this.drawRect(x*8 + 1, y*8 + 2, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 4, 1, 4);
-  }
-  if (n == 3) {
-   this.drawRect(x*8 + 1, y*8 + 3, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 5, 1, 3);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 1);
-  }
-  if (n == 4) {
-   this.drawRect(x*8 + 1, y*8 + 4, 1, 4);
-   this.drawRect(x*8 + 5, y*8 + 6, 1, 2);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 2);
-  }
-  if (n == 5) {
-   this.drawRect(x*8 + 1, y*8 + 5, 1, 3);
-   this.drawRect(x*8 + 1, y*8 + 0, 1, 1);
-   this.drawRect(x*8 + 5, y*8 + 7, 1, 1);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 3);
-  }
-  if (n == 6) {
-   this.drawRect(x*8 + 1, y*8 + 6, 1, 2);
-   this.drawRect(x*8 + 1, y*8 + 0, 1, 2);
-   this.drawRect(x*8 + 5, y*8 + 0, 1, 4);
-  }
-  if (n == 7) {
-   this.drawRect(x*8 + 1, y*8 + 7, 1, 1);
-   this.drawRect(x*8 + 1, y*8 + 0, 1, 3);
-   this.drawRect(x*8 + 5, y*8 + 1, 1, 4);
-  }*/
  }
 }
