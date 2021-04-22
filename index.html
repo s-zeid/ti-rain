@@ -58,7 +58,6 @@
     function handleEmbedParam() {
      var hash = location.hash.toLowerCase();
      document.documentElement.classList.toggle("embed", hash.match(/(^#|&)embed(&|$)/));
-     window.rain && window.rain.setCtxState();
     }
     window.addEventListener("hashchange", handleEmbedParam);
     handleEmbedParam();

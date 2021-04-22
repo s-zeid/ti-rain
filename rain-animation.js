@@ -95,10 +95,12 @@ export default
   this._didTopLevel = true;
   
   this.state.start();
+  this.ctxStateInterval = setInterval(() => this.setCtxState(true), 200);
  }
  
  disconnectedCallback() {
   this.state.stop();
+  clearInterval(this.ctxStateInterval);
  }
  
  attributeChangedCallback(name, oldValue, newValue) {
@@ -118,8 +120,10 @@ export default
  }
  
  // Set the draw settings.
- setCtxState() {
-  this.ctx.fillStyle = window.getComputedStyle(this).color;
+ setCtxState(auto) {
+  const computed = window.getComputedStyle(this);
+  if (!auto || computed.color != this._color)
+   this.ctx.fillStyle = this._color = computed.color;
  }
  
  // Determines the screen size.
@@ -203,11 +207,11 @@ export default
    }
    
    start() {
-    this.interval = setInterval(this.loop.bind(this), this.L);
+    this.loopInterval = setInterval(this.loop.bind(this), this.L);
    }
    
    stop() {
-    clearInterval(this.interval);
+    clearInterval(this.loopInterval);
    }
    
    // Returns a random integer in the range [0, maximum).
