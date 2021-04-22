@@ -17,6 +17,7 @@ export default
  
  static get HTML() { return /* html */ `
   <figure></figure>
+  <style class="clip-path"></style>
  `; }
  
  // Which version of the background sprites to use.
@@ -150,11 +151,14 @@ export default
   this.canvas.style.width = String(width) + "px";
   this.canvas.style.height = String(height) + "px";
   hostRect = this.getBoundingClientRect();
-  this.style.clipPath = `inset(${
-   String((hostRect.height - height) / 2)
-  }px ${
-   String((hostRect.width - width) / 2)
-  }px)`;
+  this.shadowRoot.querySelector("style.clip-path").textContent = `
+   :host(:not([hidden])) {
+    clip-path: inset(
+     ${(hostRect.height - height) / 2}px
+     ${(hostRect.width - width) / 2}px
+    );
+   }
+  `;
  }
  
  // Clears the entire canvas.
