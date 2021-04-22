@@ -108,12 +108,12 @@ export default
  }
  
  // Sets mutable attributes from the given search or hash parameters.
- setAttributesFromParams(params) {
+ setAttributesFromParams(paramString) {
   const attributes = this.constructor.observedAttributes;
-  params = params.replace(/^[?#]/, "");
-  for (let [k, v] of new URLSearchParams(params)) {
-   if (attributes.indexOf(k) > -1)
-    this.setAttribute(k, v);
+  paramString = paramString.replace(/^[?#]/, "");
+  const params = new URLSearchParams(paramString);
+  for (let k of attributes) {
+   this.setAttribute(k, params.get(k));
   }
  }
  
