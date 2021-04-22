@@ -5,7 +5,10 @@ export default
  
  static get CSS() { return /* css */ `
   :host(:not([hidden])) {
-   display: inline-block; aspect-ratio: 96 / 64; overflow: hidden;
+   display: inline-block; overflow: hidden;
+  }
+  :host(:not([hidden]):not([cover])) {
+   aspect-ratio: 96 / 64;
   }
   figure {
    display: flex; align-items: center; justify-content: center; text-align: center;
@@ -17,7 +20,7 @@ export default
  
  static get HTML() { return /* html */ `
   <figure></figure>
-  <style class="clip-path"></style>
+  <style class="runtime screen"></style>
  `; }
  
  // Which version of the background sprites to use.
@@ -33,7 +36,23 @@ export default
   this.state.bgVersion = Number(value) || 2;
  }
  
- static get observedAttributes() { return ["bg-version"]; }
+ // Whether the animation should cover the whole element.
+ // If false (default), the animation will be displayed at
+ // a 96:64 aspect ratio within the element.
+ get cover() {
+  return this._cover;
+ }
+ set cover(value) {
+  if (value == null)
+   this.removeAttribute("cover");
+  else
+   this.setAttribute("cover", "");
+  this._cover = Boolean(value != null);
+  this.setScreenSize();
+  this.setCtxState();
+ }
+ 
+ static get observedAttributes() { return ["bg-version", "cover"]; }
  
  constructor() {
   super();
@@ -68,6 +87,7 @@ export default
   
   // Initialize mutable attribute values
   this.bgVersion = this.bgVersion;
+  this.cover = this.cover;
   
   // Setup resize observer
   this.resizeObserver = new ResizeObserver(entries => {
@@ -137,9 +157,10 @@ export default
   this.canvas.style.width = this.canvas.style.height = "0";
   let hostRect = this.getBoundingClientRect();
   if (hostRect.width && hostRect.height) {
-   this.scaleFactor = Math.floor(hostRect.height / 64);
-   if ((96 * this.scaleFactor) > hostRect.width) {
-    this.scaleFactor = Math.floor(hostRect.width / 96);
+   if (this._cover) {
+    this.scaleFactor = Math.ceil(Math.max(hostRect.width / 96, hostRect.height / 64))
+   } else {
+    this.scaleFactor = Math.floor(Math.min(hostRect.width / 96, hostRect.height / 64))
    }
   } else {
    this.scaleFactor = 3;
@@ -150,15 +171,23 @@ export default
   this.canvas.height = height;
   this.canvas.style.width = String(width) + "px";
   this.canvas.style.height = String(height) + "px";
-  hostRect = this.getBoundingClientRect();
-  this.shadowRoot.querySelector("style.clip-path").textContent = `
-   :host(:not([hidden])) {
-    clip-path: inset(
-     ${(hostRect.height - height) / 2}px
-     ${(hostRect.width - width) / 2}px
-    );
-   }
-  `;
+  if (this._cover) {
+   this.shadowRoot.querySelector("style.runtime.screen").textContent = `
+    figure {
+     justify-content: left;
+    }
+   `;
+  } else {
+   hostRect = this.getBoundingClientRect();
+   this.shadowRoot.querySelector("style.runtime.screen").textContent = `
+    :host(:not([hidden])) {
+     clip-path: inset(
+      ${(hostRect.height - height) / 2}px
+      ${(hostRect.width - width) / 2}px
+     );
+    }
+   `;
+  }
  }
  
  // Clears the entire canvas.
