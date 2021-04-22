@@ -25,7 +25,9 @@ export default
   return this.state.bgVersion;
  }
  set bgVersion(value) {
-  if (this.getAttribute("bg-version") != String(value))
+  if (value == null)
+   this.removeAttribute("bg-version");
+  else if (this.getAttribute("bg-version") != String(value))
    this.setAttribute("bg-version", String(value));
   this.state.bgVersion = Number(value) || 2;
  }
@@ -115,7 +117,10 @@ export default
   paramString = paramString.replace(/^[?#]/, "");
   const params = new URLSearchParams(paramString);
   for (let k of attributes) {
-   this.setAttribute(k, params.get(k));
+   if (params.get(k) == null)
+    this.removeAttribute(k);
+   else
+    this.setAttribute(k, params.get(k));
   }
  }
  
