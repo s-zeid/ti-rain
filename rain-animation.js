@@ -74,8 +74,6 @@ export default
    }
   });
   this.resizeObserver.observe(this);
-  
-  this.state.start();
  }
  
  isTopLevel() {
@@ -94,6 +92,12 @@ export default
     this.setAttributesFromParams(location.hash);
    });
   }
+  
+  this.state.start();
+ }
+ 
+ disconnectedCallback() {
+  this.state.stop();
  }
  
  attributeChangedCallback(name, oldValue, newValue) {
@@ -199,6 +203,10 @@ export default
    
    start() {
     this.interval = setInterval(this.loop.bind(this), this.L);
+   }
+   
+   stop() {
+    clearInterval(this.interval);
    }
    
    // Returns a random integer in the range [0, maximum).
