@@ -86,12 +86,13 @@ export default
  connectedCallback() {
   this.setScreenSize();
   this.setCtxState();
-  if (this.isTopLevel) {
+  if (this.isTopLevel && !this._didTopLevel) {
    this.setAttributesFromParams(location.hash);
    window.addEventListener("hashchange", () => {
     this.setAttributesFromParams(location.hash);
    });
   }
+  this._didTopLevel = true;
   
   this.state.start();
  }
