@@ -171,23 +171,34 @@ export default
   this.canvas.height = height;
   this.canvas.style.width = String(width) + "px";
   this.canvas.style.height = String(height) + "px";
-  if (this._cover) {
-   this.shadowRoot.querySelector("style.runtime.screen").textContent = `
-    figure {
-     justify-content: left;
-    }
-   `;
-  } else {
-   hostRect = this.getBoundingClientRect();
-   this.shadowRoot.querySelector("style.runtime.screen").textContent = `
-    :host(:not([hidden])) {
-     clip-path: inset(
-      ${(hostRect.height - height) / 2}px
-      ${(hostRect.width - width) / 2}px
-     );
-    }
-   `;
-  }
+  this.shadowRoot.querySelector("style.runtime.screen").textContent = `
+   /* Work around changes to clip-path not taking effect in WebKit */
+   :host(:not[hidden]) {
+    opacity: 0.99;
+   }
+  `;
+  setTimeout(() => {
+   if (this._cover) {
+    this.shadowRoot.querySelector("style.runtime.screen").textContent = `
+     :host(:not([hidden])) {
+      clip-path: none;
+     }
+     figure {
+      justify-content: left;
+     }
+    `;
+   } else {
+    hostRect = this.getBoundingClientRect();
+    this.shadowRoot.querySelector("style.runtime.screen").textContent = `
+     :host(:not([hidden])) {
+      clip-path: inset(
+       ${(hostRect.height - height) / 2}px
+       ${(hostRect.width - width) / 2}px
+      );
+     }
+    `;
+   }
+  }, 1);
  }
  
  // Clears the entire canvas.
